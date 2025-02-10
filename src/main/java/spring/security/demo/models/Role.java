@@ -24,13 +24,12 @@ public class Role implements GrantedAuthority {
 
     private String authority;
 
+    public Role(){
+        super();
+    }
+
     public Role(Integer roleId, String authority) {
         this.roleId = roleId;
         this.authority = authority;
-    }
-
-    @Override
-    public String getAuthority() {
-        return authority;
     }
 }
