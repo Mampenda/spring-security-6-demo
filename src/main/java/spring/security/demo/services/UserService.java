@@ -1,10 +1,5 @@
 package spring.security.demo.services;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import spring.security.demo.models.Role;
-import spring.security.demo.models.User;
 import spring.security.demo.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

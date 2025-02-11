@@ -28,8 +28,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 
 import spring.security.demo.utils.RSAKeyProperties;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 public class SecurityConfig {
 
