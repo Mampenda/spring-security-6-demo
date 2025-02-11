@@ -17,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,8 +32,13 @@ public class User implements UserDetails{
     @Column(name="user_id")
     private Integer userId;
 
+    @Column(unique=true)
     private String username;
+    
     private String password; 
+
+    @Version
+    private Integer version;
 
     // Many users can have many roles and many roles can have many users. We want to fetch data for the authorities as soon as we fetch the user information (EAGER)
     @ManyToMany(fetch=FetchType.EAGER)
@@ -49,7 +55,7 @@ public class User implements UserDetails{
         this.authorities = new HashSet<Role>();
     }
 
-    // Constructor
+    // All arg Constructor
     public User(Integer userId, String username, String password, Set<Role> authorities){
         super();
         this.userId = userId;
