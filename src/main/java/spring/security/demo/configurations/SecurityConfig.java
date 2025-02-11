@@ -23,6 +23,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 import spring.security.demo.utils.RSAKeyProperties;
 
@@ -52,15 +54,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/auth/**").permitAll();
+                auth.requestMatchers("/admin/**").hasRole("ADMIN");
+                auth.requestMatchers("/user/**").hasAnyRole("ADMIN","CLIENT");
                 auth.anyRequest().authenticated();
             })
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-            .sessionManagement( session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .build();
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt 
+                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+            ))
+            .sessionManagement( session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
     }
 
     @Bean 
@@ -73,5 +81,18 @@ public class SecurityConfig {
         JWK jwk = new RSAKey.Builder(keys.getPublicKey()).privateKey(keys.getPrivateKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+        // Add ROLE_ prefix so Spring Security can recognize the role
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        // Create new token with the new authorities
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        return jwtConverter;
     }
 }
